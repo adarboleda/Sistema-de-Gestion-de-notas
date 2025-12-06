@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import ConfirmModal from '../components/ConfirmModal';
+import AlertNotification from '../components/AlertNotification';
+import { useAlert, useConfirmModal } from '../hooks/useAlert';
 
 export default function Asignaturas() {
   const [asignaturas, setAsignaturas] = useState([]);
@@ -11,6 +14,10 @@ export default function Asignaturas() {
   });
   const [editando, setEditando] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Hooks para alertas y modales
+  const { alert, showSuccess, showError, showWarning, hideAlert } = useAlert();
+  const { modal, showConfirm, hideModal, handleConfirm } = useConfirmModal();
 
   const API_URL = 'http://localhost:3000/api/asignaturas';
   const DOCENTES_URL = 'http://localhost:3000/api/docentes';
@@ -28,7 +35,7 @@ export default function Asignaturas() {
       setAsignaturas(data);
     } catch (error) {
       console.error('Error al cargar asignaturas:', error);
-      alert('Error al cargar asignaturas');
+      showError('Error al cargar asignaturas');
     } finally {
       setLoading(false);
     }
@@ -47,7 +54,7 @@ export default function Asignaturas() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.nombre || !form.codigo || !form.creditos || !form.docenteId) {
-      alert('Por favor complete todos los campos');
+      showWarning('Por favor complete todos los campos');
       return;
     }
 
@@ -64,21 +71,21 @@ export default function Asignaturas() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(datos),
         });
-        alert('Asignatura actualizada exitosamente');
+        showSuccess('Asignatura actualizada exitosamente');
       } else {
         await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(datos),
         });
-        alert('Asignatura creada exitosamente');
+        showSuccess('Asignatura creada exitosamente');
       }
       setForm({ nombre: '', codigo: '', creditos: '', docenteId: '' });
       setEditando(null);
       cargarAsignaturas();
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al guardar la asignatura');
+      showError('Error al guardar la asignatura');
     }
   };
 
@@ -92,17 +99,22 @@ export default function Asignaturas() {
     setEditando(asignatura.id);
   };
 
-  const handleEliminar = async (id) => {
-    if (window.confirm('¿Está seguro de eliminar esta asignatura?')) {
-      try {
-        await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-        alert('Asignatura eliminada exitosamente');
-        cargarAsignaturas();
-      } catch (error) {
-        console.error('Error:', error);
-        alert('Error al eliminar la asignatura');
-      }
-    }
+  const handleEliminar = (id) => {
+    showConfirm(
+      'Eliminar Asignatura',
+      '¿Está seguro de eliminar esta asignatura? Esta acción marcará el registro como eliminado.',
+      async () => {
+        try {
+          await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+          showSuccess('Asignatura eliminada exitosamente');
+          cargarAsignaturas();
+        } catch (error) {
+          console.error('Error:', error);
+          showError('Error al eliminar la asignatura');
+        }
+      },
+      'danger'
+    );
   };
 
   const handleCancelar = () => {
@@ -117,6 +129,26 @@ export default function Asignaturas() {
 
   return (
     <div className="container mt-4">
+      {/* Alerta de notificaciones */}
+      <AlertNotification
+        type={alert.type}
+        message={alert.message}
+        show={alert.show}
+        onClose={hideAlert}
+      />
+
+      {/* Modal de confirmación */}
+      <ConfirmModal
+        show={modal.show}
+        title={modal.title}
+        message={modal.message}
+        onConfirm={handleConfirm}
+        onCancel={hideModal}
+        variant={modal.variant}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+      />
+
       <h1 className="mb-4">Gestión de Asignaturas</h1>
 
       <div className="row">

@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import ConfirmModal from '../components/ConfirmModal';
+import AlertNotification from '../components/AlertNotification';
+import { useAlert, useConfirmModal } from '../hooks/useAlert';
 
 export default function Notas() {
   const [notas, setNotas] = useState([]);
@@ -13,6 +16,10 @@ export default function Notas() {
   });
   const [editando, setEditando] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Hooks para alertas y modales
+  const { alert, showSuccess, showError, showWarning, hideAlert } = useAlert();
+  const { modal, showConfirm, hideModal, handleConfirm } = useConfirmModal();
 
   const API_URL = 'http://localhost:3000/api/notas';
   const ESTUDIANTES_URL = 'http://localhost:3000/api/estudiantes';
@@ -32,7 +39,7 @@ export default function Notas() {
       setNotas(data);
     } catch (error) {
       console.error('Error al cargar notas:', error);
-      alert('Error al cargar notas');
+      showError('Error al cargar notas');
     } finally {
       setLoading(false);
     }
@@ -61,7 +68,7 @@ export default function Notas() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.nota1 || !form.nota2 || !form.nota3 || !form.estudianteId || !form.asignaturaId) {
-      alert('Por favor complete todos los campos');
+      showWarning('Por favor complete todos los campos');
       return;
     }
 
@@ -80,14 +87,14 @@ export default function Notas() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(datos),
         });
-        alert('Nota actualizada exitosamente');
+        showSuccess('Nota actualizada exitosamente');
       } else {
         await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(datos),
         });
-        alert('Nota creada exitosamente');
+        showSuccess('Nota creada exitosamente');
       }
       setForm({
         nota1: '',
@@ -100,7 +107,7 @@ export default function Notas() {
       cargarNotas();
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al guardar la nota');
+      showError('Error al guardar la nota');
     }
   };
 
@@ -115,17 +122,22 @@ export default function Notas() {
     setEditando(nota.id);
   };
 
-  const handleEliminar = async (id) => {
-    if (window.confirm('¿Está seguro de eliminar esta nota?')) {
-      try {
-        await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-        alert('Nota eliminada exitosamente');
-        cargarNotas();
-      } catch (error) {
-        console.error('Error:', error);
-        alert('Error al eliminar la nota');
-      }
-    }
+  const handleEliminar = (id) => {
+    showConfirm(
+      'Eliminar Nota',
+      '¿Está seguro de eliminar esta nota? Esta acción marcará el registro como eliminado.',
+      async () => {
+        try {
+          await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+          showSuccess('Nota eliminada exitosamente');
+          cargarNotas();
+        } catch (error) {
+          console.error('Error:', error);
+          showError('Error al eliminar la nota');
+        }
+      },
+      'danger'
+    );
   };
 
   const handleCancelar = () => {
@@ -166,6 +178,26 @@ export default function Notas() {
 
   return (
     <div className="container mt-4">
+      {/* Alerta de notificaciones */}
+      <AlertNotification
+        type={alert.type}
+        message={alert.message}
+        show={alert.show}
+        onClose={hideAlert}
+      />
+
+      {/* Modal de confirmación */}
+      <ConfirmModal
+        show={modal.show}
+        title={modal.title}
+        message={modal.message}
+        onConfirm={handleConfirm}
+        onCancel={hideModal}
+        variant={modal.variant}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+      />
+
       <h1 className="mb-4">Gestión de Notas</h1>
 
       <div className="row">

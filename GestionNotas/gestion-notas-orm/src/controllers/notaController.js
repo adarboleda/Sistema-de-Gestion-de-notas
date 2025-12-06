@@ -1,12 +1,12 @@
-import { Nota } from "../models/nota.js";
-import { Estudiante } from "../models/estudiante.js";
-import { Asignatura } from "../models/asignatura.js";
-import { Docente } from "../models/docente.js";
+import { Nota } from '../models/nota.js';
+import { Estudiante } from '../models/estudiante.js';
+import { Asignatura } from '../models/asignatura.js';
+import { Docente } from '../models/docente.js';
 
 // Procesos funcionales
 
 function enRango(nota) {
-  if (typeof nota == "number" && nota >= 0 && nota <= 20) {
+  if (typeof nota == 'number' && nota >= 0 && nota <= 20) {
     return true;
   } else {
     return false;
@@ -23,11 +23,11 @@ function calcularPromedio(nota1, nota2, nota3) {
 // Determinar la categoría según el promedio
 function categoriaPromedio(promedio) {
   if (promedio >= 18) {
-    return "Sobresaliente";
+    return 'Sobresaliente';
   } else if (promedio >= 14) {
-    return "Aprobado";
+    return 'Aprobado';
   } else {
-    return "Reprobado";
+    return 'Reprobado';
   }
 }
 
@@ -37,21 +37,17 @@ export const crearNota = async (req, res) => {
     const { asignaturaId, nota1, nota2, nota3, estudianteId } = req.body;
 
     // Validar datos obligatorios
-    if (
-      !asignaturaId ||
-      [nota1, nota2, nota3].some((n) => n === undefined) ||
-      !estudianteId
-    ) {
+    if (!asignaturaId || [nota1, nota2, nota3].some((n) => n === undefined) || !estudianteId) {
       return res.status(400).json({
         error:
-          "Faltan datos obligatorios: asignaturaId, nota1, nota2, nota3 y estudianteId son requeridos",
+          'Faltan datos obligatorios: asignaturaId, nota1, nota2, nota3 y estudianteId son requeridos',
       });
     }
 
     // Validar que las notas estén en el rango correcto
     if (![nota1, nota2, nota3].every(enRango)) {
       return res.status(400).json({
-        error: "Las notas deben estar en el rango de 0 a 20",
+        error: 'Las notas deben estar en el rango de 0 a 20',
       });
     }
 
@@ -67,7 +63,7 @@ export const crearNota = async (req, res) => {
     if (notaExistente) {
       return res.status(400).json({
         error:
-          "Este estudiante ya tiene una nota registrada en esta asignatura. Use PUT para actualizar.",
+          'Este estudiante ya tiene una nota registrada en esta asignatura. Use PUT para actualizar.',
       });
     }
 
@@ -85,15 +81,14 @@ export const crearNota = async (req, res) => {
     res.status(201).json(nuevaNota);
   } catch (error) {
     // Manejar error de clave única duplicada
-    if (error.name === "SequelizeUniqueConstraintError") {
+    if (error.name === 'SequelizeUniqueConstraintError') {
       return res.status(400).json({
-        error:
-          "Este estudiante ya tiene una nota registrada en esta asignatura",
+        error: 'Este estudiante ya tiene una nota registrada en esta asignatura',
       });
     }
 
     res.status(500).json({
-      mensaje: "Error al crear la nota",
+      mensaje: 'Error al crear la nota',
       error: error.message,
     });
   }
@@ -103,18 +98,21 @@ export const crearNota = async (req, res) => {
 export const listarNotas = async (req, res) => {
   try {
     const notas = await Nota.findAll({
+      where: { eliminado: false },
       include: [
-        { model: Estudiante },
+        { model: Estudiante, where: { eliminado: false }, required: false },
         {
           model: Asignatura,
-          include: [{ model: Docente }],
+          where: { eliminado: false },
+          required: false,
+          include: [{ model: Docente, where: { eliminado: false }, required: false }],
         },
       ],
     });
     res.json(notas);
   } catch (error) {
     res.status(500).json({
-      mensaje: "Error al obtener las notas",
+      mensaje: 'Error al obtener las notas',
       error: error.message,
     });
   }
@@ -123,24 +121,27 @@ export const listarNotas = async (req, res) => {
 // Buscar nota por ID
 export const obtenerNotaPorId = async (req, res) => {
   try {
-    const nota = await Nota.findByPk(req.params.id, {
+    const nota = await Nota.findOne({
+      where: { id: req.params.id, eliminado: false },
       include: [
-        { model: Estudiante },
+        { model: Estudiante, where: { eliminado: false }, required: false },
         {
           model: Asignatura,
-          include: [{ model: Docente }],
+          where: { eliminado: false },
+          required: false,
+          include: [{ model: Docente, where: { eliminado: false }, required: false }],
         },
       ],
     });
 
     if (!nota) {
-      return res.status(404).json({ mensaje: "Nota no encontrada" });
+      return res.status(404).json({ mensaje: 'Nota no encontrada' });
     }
 
     res.json(nota);
   } catch (error) {
     res.status(500).json({
-      mensaje: "Error al obtener la nota",
+      mensaje: 'Error al obtener la nota',
       error: error.message,
     });
   }
@@ -149,7 +150,7 @@ export const obtenerNotaPorId = async (req, res) => {
 export const actualizarNota = async (req, res) => {
   try {
     const nota = await Nota.findByPk(req.params.id);
-    if (!nota) return res.status(404).json({ mensaje: "No existe" });
+    if (!nota) return res.status(404).json({ mensaje: 'No existe' });
 
     // Permitir actualizar cualquier campo; si vienen las 3 notas, recalculamos.
     const { nota1, nota2, nota3 } = req.body;
@@ -157,9 +158,7 @@ export const actualizarNota = async (req, res) => {
 
     if ([nota1, nota2, nota3].every((n) => n !== undefined)) {
       if (![nota1, nota2, nota3].every(enRango)) {
-        return res
-          .status(400)
-          .json({ mensaje: "Las notas deben estar entre 0 y 20." });
+        return res.status(400).json({ mensaje: 'Las notas deben estar entre 0 y 20.' });
       }
       const promedio = calcularPromedio(nota1, nota2, nota3);
       const categoria = categoriaPromedio(promedio);
@@ -170,27 +169,28 @@ export const actualizarNota = async (req, res) => {
     await nota.update(payload);
     res.json(nota);
   } catch (e) {
-    res
-      .status(500)
-      .json({ mensaje: "Error al actualizar la nota", error: e.message });
+    res.status(500).json({ mensaje: 'Error al actualizar la nota', error: e.message });
   }
 };
 
-// Eliminar nota por ID
+// Eliminar nota por ID (soft delete)
 export const eliminarNota = async (req, res) => {
   try {
-    const nota = await Nota.findByPk(req.params.id);
+    const nota = await Nota.findOne({
+      where: { id: req.params.id, eliminado: false },
+    });
 
     if (!nota) {
-      return res.status(404).json({ mensaje: "Nota no encontrada" });
+      return res.status(404).json({ mensaje: 'Nota no encontrada' });
     }
 
-    await nota.destroy();
+    nota.eliminado = true;
+    await nota.save();
 
-    res.json({ mensaje: "Nota eliminada correctamente" });
+    res.json({ mensaje: 'Nota eliminada correctamente', nota });
   } catch (error) {
     res.status(500).json({
-      mensaje: "Error al eliminar la nota",
+      mensaje: 'Error al eliminar la nota',
       error: error.message,
     });
   }

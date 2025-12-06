@@ -62,14 +62,14 @@ export const crearDocente = async (req, res) => {
 export const listarDocentes = async (req, res) => {
   try {
     const { estado, area } = req.query;
-    const where = {};
+    const where = { eliminado: false };
 
     if (estado) where.estado = estado;
     if (area) where.area = area;
 
     const docentes = await Docente.findAll({
       where,
-      include: [{ model: Asignatura }],
+      include: [{ model: Asignatura, where: { eliminado: false }, required: false }],
     });
     res.json(docentes);
   } catch (error) {
@@ -89,6 +89,7 @@ export const buscarDocente = async (req, res) => {
 
     const docentes = await Docente.findAll({
       where: {
+        eliminado: false,
         [Op.or]: [
           { cedula: { [Op.like]: `%${termino}%` } },
           { nombre: { [Op.like]: `%${termino}%` } },
@@ -97,7 +98,7 @@ export const buscarDocente = async (req, res) => {
           { id: isNaN(termino) ? null : parseInt(termino) },
         ],
       },
-      include: [{ model: Asignatura }],
+      include: [{ model: Asignatura, where: { eliminado: false }, required: false }],
     });
 
     res.status(200).json(docentes);
@@ -111,8 +112,9 @@ export const buscarDocente = async (req, res) => {
 export const obtenerDocentePorId = async (req, res) => {
   try {
     const { id } = req.params;
-    const docente = await Docente.findByPk(id, {
-      include: [{ model: Asignatura }],
+    const docente = await Docente.findOne({
+      where: { id, eliminado: false },
+      include: [{ model: Asignatura, where: { eliminado: false }, required: false }],
     });
 
     if (docente) {
@@ -189,15 +191,19 @@ export const actualizarDocente = async (req, res) => {
   }
 };
 
-// Eliminar un docente por ID
+// Eliminar un docente por ID (soft delete)
 export const eliminarDocente = async (req, res) => {
   try {
     const { id } = req.params;
-    const docente = await Docente.findByPk(id);
+    const docente = await Docente.findOne({
+      where: { id, eliminado: false },
+    });
 
     if (docente) {
-      await docente.destroy();
-      res.json({ mensaje: 'Docente eliminado correctamente' });
+      docente.eliminado = true;
+      docente.estado = 'inactivo';
+      await docente.save();
+      res.json({ mensaje: 'Docente eliminado correctamente', docente });
     } else {
       res.status(404).json({ error: 'Docente no encontrado' });
     }

@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { estudianteService } from '../services/estudianteService';
+import ConfirmModal from '../components/ConfirmModal';
+import AlertNotification from '../components/AlertNotification';
+import { useAlert, useConfirmModal } from '../hooks/useAlert';
 
 export default function Estudiantes() {
   const [estudiantes, setEstudiantes] = useState([]);
@@ -21,6 +24,10 @@ export default function Estudiantes() {
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('');
 
+  // Hooks para alertas y modales
+  const { alert, showSuccess, showError, showWarning, hideAlert } = useAlert();
+  const { modal, showConfirm, hideModal, handleConfirm } = useConfirmModal();
+
   useEffect(() => {
     cargarEstudiantes();
   }, []);
@@ -32,7 +39,7 @@ export default function Estudiantes() {
       setEstudiantes(data);
     } catch (error) {
       console.error('Error al cargar estudiantes:', error);
-      alert('Error al cargar estudiantes');
+      showError('Error al cargar estudiantes');
     } finally {
       setLoading(false);
     }
@@ -47,9 +54,12 @@ export default function Estudiantes() {
     try {
       const data = await estudianteService.buscar(busqueda);
       setEstudiantes(data);
+      if (data.length === 0) {
+        showWarning('No se encontraron estudiantes con ese criterio');
+      }
     } catch (error) {
       console.error('Error al buscar:', error);
-      alert('Error al buscar estudiante');
+      showError('Error al buscar estudiante');
     } finally {
       setLoading(false);
     }
@@ -58,17 +68,17 @@ export default function Estudiantes() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.cedula || !form.nombre || !form.apellido || !form.email) {
-      alert('Por favor complete los campos obligatorios (Cédula, Nombre, Apellido, Email)');
+      showWarning('Por favor complete los campos obligatorios (Cédula, Nombre, Apellido, Email)');
       return;
     }
 
     try {
       if (editando) {
         await estudianteService.actualizar(editando, form);
-        alert('Estudiante actualizado exitosamente');
+        showSuccess('Estudiante actualizado exitosamente');
       } else {
         await estudianteService.crear(form);
-        alert('Estudiante creado exitosamente');
+        showSuccess('Estudiante creado exitosamente');
       }
       setForm({
         cedula: '',
@@ -87,7 +97,7 @@ export default function Estudiantes() {
       cargarEstudiantes();
     } catch (error) {
       console.error('Error:', error);
-      alert(error.message || 'Error al guardar el estudiante');
+      showError(error.message || 'Error al guardar el estudiante');
     }
   };
 
@@ -108,19 +118,22 @@ export default function Estudiantes() {
     setEditando(estudiante.id);
   };
 
-  const handleEliminar = async (id) => {
-    if (
-      window.confirm('¿Está seguro de eliminar este estudiante? Esta acción no se puede deshacer.')
-    ) {
-      try {
-        await estudianteService.eliminar(id);
-        alert('Estudiante eliminado exitosamente');
-        cargarEstudiantes();
-      } catch (error) {
-        console.error('Error:', error);
-        alert('Error al eliminar el estudiante');
-      }
-    }
+  const handleEliminar = (id) => {
+    showConfirm(
+      'Eliminar Estudiante',
+      '¿Está seguro de eliminar este estudiante? Esta acción marcará el registro como eliminado.',
+      async () => {
+        try {
+          await estudianteService.eliminar(id);
+          showSuccess('Estudiante eliminado exitosamente');
+          cargarEstudiantes();
+        } catch (error) {
+          console.error('Error:', error);
+          showError('Error al eliminar el estudiante');
+        }
+      },
+      'danger'
+    );
   };
 
   const handleCancelar = () => {
@@ -152,6 +165,26 @@ export default function Estudiantes() {
 
   return (
     <div className="container-fluid mt-4">
+      {/* Alerta de notificaciones */}
+      <AlertNotification
+        type={alert.type}
+        message={alert.message}
+        show={alert.show}
+        onClose={hideAlert}
+      />
+
+      {/* Modal de confirmación */}
+      <ConfirmModal
+        show={modal.show}
+        title={modal.title}
+        message={modal.message}
+        onConfirm={handleConfirm}
+        onCancel={hideModal}
+        variant={modal.variant}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+      />
+
       <h1 className="mb-4">👨‍🎓 Gestión de Estudiantes</h1>
 
       {/* Barra de Búsqueda */}
@@ -380,6 +413,15 @@ export default function Estudiantes() {
                             </td>
                             <td>
                               <div className="btn-group btn-group-sm">
+                                <button
+                                  className="btn btn-info"
+                                  onClick={() =>
+                                    (window.location.href = `/estudiantes/${est.id}/perfil`)
+                                  }
+                                  title="Ver Perfil"
+                                >
+                                  👁️
+                                </button>
                                 <button
                                   className="btn btn-warning"
                                   onClick={() => handleEditar(est)}

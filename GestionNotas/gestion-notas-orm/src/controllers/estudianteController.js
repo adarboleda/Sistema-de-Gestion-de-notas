@@ -65,7 +65,7 @@ export const crearEstudiante = async (req, res) => {
 export const listarEstudiantes = async (req, res) => {
   try {
     const { estado, curso, paralelo } = req.query;
-    const where = {};
+    const where = { eliminado: false };
 
     if (estado) where.estado = estado;
     if (curso) where.curso = curso;
@@ -90,6 +90,7 @@ export const buscarEstudiante = async (req, res) => {
 
     const estudiantes = await Estudiante.findAll({
       where: {
+        eliminado: false,
         [Op.or]: [
           { cedula: { [Op.like]: `%${termino}%` } },
           { nombre: { [Op.like]: `%${termino}%` } },
@@ -110,7 +111,9 @@ export const buscarEstudiante = async (req, res) => {
 export const obtenerEstudiantePorId = async (req, res) => {
   try {
     const { id } = req.params;
-    const estudiante = await Estudiante.findByPk(id);
+    const estudiante = await Estudiante.findOne({
+      where: { id, eliminado: false },
+    });
     if (estudiante) {
       res.status(200).json(estudiante);
     } else {
@@ -187,14 +190,18 @@ export const actualizarEstudiante = async (req, res) => {
   }
 };
 
-// Eliminar un estudiante por ID (eliminación física)
+// Eliminar un estudiante por ID (eliminación lógica - soft delete)
 export const eliminarEstudiante = async (req, res) => {
   try {
     const { id } = req.params;
-    const estudiante = await Estudiante.findByPk(id);
+    const estudiante = await Estudiante.findOne({
+      where: { id, eliminado: false },
+    });
     if (estudiante) {
-      await estudiante.destroy();
-      res.status(204).send();
+      estudiante.eliminado = true;
+      estudiante.estado = 'inactivo';
+      await estudiante.save();
+      res.status(200).json({ message: 'Estudiante eliminado exitosamente', estudiante });
     } else {
       res.status(404).json({ error: 'Estudiante no encontrado' });
     }

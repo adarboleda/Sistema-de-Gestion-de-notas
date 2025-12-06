@@ -1,9 +1,9 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/database.js";
-import { Docente } from "./docente.js";
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/database.js';
+import { Docente } from './docente.js';
 
 export const Asignatura = sequelize.define(
-  "Asignatura",
+  'Asignatura',
   {
     id: {
       type: DataTypes.INTEGER,
@@ -32,16 +32,22 @@ export const Asignatura = sequelize.define(
       allowNull: false,
       references: {
         model: Docente,
-        key: "id",
+        key: 'id',
       },
+    },
+    eliminado: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      comment: 'Soft delete - true si está eliminado',
     },
   },
   {
-    tableName: "asignaturas",
+    tableName: 'asignaturas',
     timestamps: false,
   }
 );
 
 // Relación: Docente tiene muchas Asignaturas
-Docente.hasMany(Asignatura, { foreignKey: "docenteId", onDelete: "CASCADE" });
-Asignatura.belongsTo(Docente, { foreignKey: "docenteId" });
+Docente.hasMany(Asignatura, { foreignKey: 'docenteId', onDelete: 'CASCADE' });
+Asignatura.belongsTo(Docente, { foreignKey: 'docenteId' });

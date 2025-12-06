@@ -64,6 +64,12 @@ export const Docente = sequelize.define(
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
+    eliminado: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      comment: 'Soft delete - true si está eliminado',
+    },
   },
   {
     tableName: 'docentes',

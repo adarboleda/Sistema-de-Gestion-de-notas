@@ -69,6 +69,12 @@ export const Estudiante = sequelize.define(
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+    eliminado: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      comment: 'Soft delete - true si está eliminado',
+    },
   },
   {
     tableName: 'estudiantes',

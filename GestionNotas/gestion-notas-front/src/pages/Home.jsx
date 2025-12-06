@@ -18,15 +18,19 @@ export default function Home() {
     setLoading(true);
     try {
       const [actividadesData, notificacionesData, eventosData] = await Promise.all([
-        actividadService.listarUltimas(5),
-        notificacionService.listarTodos(null, 5, true),
-        eventoService.obtenerProximos(7),
+        actividadService.listarUltimas(5).catch(() => []),
+        notificacionService.listarTodos(null, 5, true).catch(() => []),
+        eventoService.obtenerProximos(7).catch(() => []),
       ]);
-      setActividades(actividadesData);
-      setNotificaciones(notificacionesData);
-      setEventos(eventosData);
+      setActividades(actividadesData || []);
+      setNotificaciones(notificacionesData || []);
+      setEventos(eventosData || []);
     } catch (error) {
       console.error('Error al cargar dashboard:', error);
+      // Asegurarse de que siempre haya arrays vacíos
+      setActividades([]);
+      setNotificaciones([]);
+      setEventos([]);
     } finally {
       setLoading(false);
     }

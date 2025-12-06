@@ -1,10 +1,10 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/database.js";
-import { Estudiante } from "./estudiante.js";
-import { Asignatura } from "./asignatura.js";
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/database.js';
+import { Estudiante } from './estudiante.js';
+import { Asignatura } from './asignatura.js';
 
 export const Nota = sequelize.define(
-  "Nota",
+  'Nota',
   {
     id: {
       type: DataTypes.INTEGER,
@@ -52,7 +52,7 @@ export const Nota = sequelize.define(
       allowNull: false,
       references: {
         model: Estudiante,
-        key: "id",
+        key: 'id',
       },
     },
     asignaturaId: {
@@ -60,26 +60,32 @@ export const Nota = sequelize.define(
       allowNull: false,
       references: {
         model: Asignatura,
-        key: "id",
+        key: 'id',
       },
+    },
+    eliminado: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      comment: 'Soft delete - true si está eliminado',
     },
   },
   {
-    tableName: "notas",
+    tableName: 'notas',
     timestamps: false,
     indexes: [
       {
         unique: true,
-        fields: ["estudianteId", "asignaturaId"],
-        name: "unique_estudiante_asignatura",
+        fields: ['estudianteId', 'asignaturaId'],
+        name: 'unique_estudiante_asignatura',
       },
     ],
   }
 );
 
 // Definir relaciones
-Estudiante.hasMany(Nota, { foreignKey: "estudianteId", onDelete: "CASCADE" });
-Nota.belongsTo(Estudiante, { foreignKey: "estudianteId" });
+Estudiante.hasMany(Nota, { foreignKey: 'estudianteId', onDelete: 'CASCADE' });
+Nota.belongsTo(Estudiante, { foreignKey: 'estudianteId' });
 
-Asignatura.hasMany(Nota, { foreignKey: "asignaturaId", onDelete: "CASCADE" });
-Nota.belongsTo(Asignatura, { foreignKey: "asignaturaId" });
+Asignatura.hasMany(Nota, { foreignKey: 'asignaturaId', onDelete: 'CASCADE' });
+Nota.belongsTo(Asignatura, { foreignKey: 'asignaturaId' });

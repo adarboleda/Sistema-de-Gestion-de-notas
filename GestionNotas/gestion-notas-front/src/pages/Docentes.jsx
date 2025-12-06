@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { docenteService } from '../services/docenteService';
+import ConfirmModal from '../components/ConfirmModal';
+import AlertNotification from '../components/AlertNotification';
+import { useAlert, useConfirmModal } from '../hooks/useAlert';
 
 export default function Docentes() {
   const [docentes, setDocentes] = useState([]);
@@ -20,6 +23,10 @@ export default function Docentes() {
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState('');
 
+  // Hooks para alertas y modales
+  const { alert, showSuccess, showError, showWarning, hideAlert } = useAlert();
+  const { modal, showConfirm, hideModal, handleConfirm } = useConfirmModal();
+
   useEffect(() => {
     cargarDocentes();
   }, []);
@@ -31,7 +38,7 @@ export default function Docentes() {
       setDocentes(data);
     } catch (error) {
       console.error('Error al cargar docentes:', error);
-      alert('Error al cargar docentes');
+      showError('Error al cargar docentes');
     } finally {
       setLoading(false);
     }
@@ -46,9 +53,12 @@ export default function Docentes() {
     try {
       const data = await docenteService.buscar(busqueda);
       setDocentes(data);
+      if (data.length === 0) {
+        showWarning('No se encontraron docentes con ese criterio');
+      }
     } catch (error) {
       console.error('Error al buscar:', error);
-      alert('Error al buscar docente');
+      showError('Error al buscar docente');
     } finally {
       setLoading(false);
     }
@@ -57,17 +67,17 @@ export default function Docentes() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.cedula || !form.nombre || !form.apellido || !form.email) {
-      alert('Por favor complete los campos obligatorios (Cédula, Nombre, Apellido, Email)');
+      showWarning('Por favor complete los campos obligatorios (Cédula, Nombre, Apellido, Email)');
       return;
     }
 
     try {
       if (editando) {
         await docenteService.actualizar(editando, form);
-        alert('Docente actualizado exitosamente');
+        showSuccess('Docente actualizado exitosamente');
       } else {
         await docenteService.crear(form);
-        alert('Docente creado exitosamente');
+        showSuccess('Docente creado exitosamente');
       }
       setForm({
         cedula: '',
@@ -86,7 +96,7 @@ export default function Docentes() {
       cargarDocentes();
     } catch (error) {
       console.error('Error:', error);
-      alert(error.message || 'Error al guardar el docente');
+      showError(error.message || 'Error al guardar el docente');
     }
   };
 
@@ -107,17 +117,22 @@ export default function Docentes() {
     setEditando(docente.id);
   };
 
-  const handleEliminar = async (id) => {
-    if (window.confirm('¿Está seguro de eliminar este docente?')) {
-      try {
-        await docenteService.eliminar(id);
-        alert('Docente eliminado exitosamente');
-        cargarDocentes();
-      } catch (error) {
-        console.error('Error:', error);
-        alert('Error al eliminar el docente');
-      }
-    }
+  const handleEliminar = (id) => {
+    showConfirm(
+      'Eliminar Docente',
+      '¿Está seguro de eliminar este docente? Esta acción marcará el registro como eliminado.',
+      async () => {
+        try {
+          await docenteService.eliminar(id);
+          showSuccess('Docente eliminado exitosamente');
+          cargarDocentes();
+        } catch (error) {
+          console.error('Error:', error);
+          showError('Error al eliminar el docente');
+        }
+      },
+      'danger'
+    );
   };
 
   const handleCancelar = () => {
@@ -148,6 +163,26 @@ export default function Docentes() {
 
   return (
     <div className="container-fluid mt-4">
+      {/* Alerta de notificaciones */}
+      <AlertNotification
+        type={alert.type}
+        message={alert.message}
+        show={alert.show}
+        onClose={hideAlert}
+      />
+
+      {/* Modal de confirmación */}
+      <ConfirmModal
+        show={modal.show}
+        title={modal.title}
+        message={modal.message}
+        onConfirm={handleConfirm}
+        onCancel={hideModal}
+        variant={modal.variant}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+      />
+
       <h1 className="mb-4">👨‍🏫 Gestión de Docentes</h1>
 
       {/* Barra de Búsqueda */}
