@@ -25,6 +25,10 @@ export default function Evaluaciones() {
   const [editando, setEditando] = useState(null);
   const [loading, setLoading] = useState(false);
   const [filtroParcial, setFiltroParcial] = useState('');
+  const [filtroEstudiante, setFiltroEstudiante] = useState('');
+  const [filtroDocente, setFiltroDocente] = useState('');
+  const [filtroAsignatura, setFiltroAsignatura] = useState('');
+  const [ordenamiento, setOrdenamiento] = useState('');
   const { alert, showSuccess, showError, showWarning, hideAlert } = useAlert();
 
   useEffect(() => {
@@ -246,13 +250,35 @@ export default function Evaluaciones() {
     }
   };
 
-  const evaluacionesFiltradas = evaluaciones.filter(
-    (e) => !filtroParcial || e.parcial === parseInt(filtroParcial)
-  );
+  // Aplicar filtros
+  let evaluacionesFiltradas = evaluaciones.filter((e) => {
+    if (filtroParcial && e.parcial !== parseInt(filtroParcial)) return false;
+    if (filtroEstudiante && e.estudianteId !== parseInt(filtroEstudiante)) return false;
+    if (filtroDocente && e.docenteId !== parseInt(filtroDocente)) return false;
+    if (filtroAsignatura && e.asignaturaId !== parseInt(filtroAsignatura)) return false;
+    return true;
+  });
+
+  // Aplicar ordenamiento
+  if (ordenamiento === 'mayor_nota') {
+    evaluacionesFiltradas = [...evaluacionesFiltradas].sort(
+      (a, b) => b.nota_sobre_14 - a.nota_sobre_14
+    );
+  } else if (ordenamiento === 'menor_nota') {
+    evaluacionesFiltradas = [...evaluacionesFiltradas].sort(
+      (a, b) => a.nota_sobre_14 - b.nota_sobre_14
+    );
+  } else if (ordenamiento === 'ultima_actualizacion') {
+    evaluacionesFiltradas = [...evaluacionesFiltradas].sort(
+      (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+    );
+  }
 
   return (
     <div className="container-fluid mt-4">
-      <h1 className="mb-4">📝 Gestión de Evaluaciones (Sistema de Parciales)</h1>
+      <h1 className="mb-4">
+        <i className="bi bi-clipboard-check"></i> Gestión de Evaluaciones (Sistema de Parciales)
+      </h1>
 
       {/* Información del Sistema */}
       <div className="alert alert-info mb-4">
@@ -283,12 +309,62 @@ export default function Evaluaciones() {
         </div>
       </div>
 
-      {/* Filtros */}
+      {/* Filtros Avanzados */}
       <div className="card mb-4">
+        <div className="card-header bg-secondary text-white">
+          <h6 className="mb-0">
+            <i className="bi bi-funnel"></i> Filtros y Ordenamiento
+          </h6>
+        </div>
         <div className="card-body">
           <div className="row g-3">
             <div className="col-md-3">
-              <label className="form-label">Filtrar por Parcial:</label>
+              <label className="form-label">Estudiante:</label>
+              <select
+                className="form-select"
+                value={filtroEstudiante}
+                onChange={(e) => setFiltroEstudiante(e.target.value)}
+              >
+                <option value="">Todos los estudiantes</option>
+                {estudiantes.map((est) => (
+                  <option key={est.id} value={est.id}>
+                    {est.nombre} {est.apellido}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label">Docente:</label>
+              <select
+                className="form-select"
+                value={filtroDocente}
+                onChange={(e) => setFiltroDocente(e.target.value)}
+              >
+                <option value="">Todos los docentes</option>
+                {docentes.map((doc) => (
+                  <option key={doc.id} value={doc.id}>
+                    {doc.nombre} {doc.apellido}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label">Asignatura:</label>
+              <select
+                className="form-select"
+                value={filtroAsignatura}
+                onChange={(e) => setFiltroAsignatura(e.target.value)}
+              >
+                <option value="">Todas las asignaturas</option>
+                {asignaturas.map((asig) => (
+                  <option key={asig.id} value={asig.id}>
+                    {asig.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label">Parcial:</label>
               <select
                 className="form-select"
                 value={filtroParcial}
@@ -301,6 +377,38 @@ export default function Evaluaciones() {
               </select>
             </div>
           </div>
+          <div className="row g-3 mt-2">
+            <div className="col-md-4">
+              <label className="form-label">Ordenar por:</label>
+              <select
+                className="form-select"
+                value={ordenamiento}
+                onChange={(e) => setOrdenamiento(e.target.value)}
+              >
+                <option value="">Sin ordenamiento</option>
+                <option value="mayor_nota">Mayor nota</option>
+                <option value="menor_nota">Menor nota</option>
+                <option value="ultima_actualizacion">Última actualización</option>
+              </select>
+            </div>
+            <div className="col-md-8 d-flex align-items-end">
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => {
+                  setFiltroParcial('');
+                  setFiltroEstudiante('');
+                  setFiltroDocente('');
+                  setFiltroAsignatura('');
+                  setOrdenamiento('');
+                }}
+              >
+                <i className="bi bi-arrow-clockwise"></i> Limpiar Filtros
+              </button>
+              <span className="ms-3 text-muted align-self-center">
+                {evaluacionesFiltradas.length} evaluación(es) encontrada(s)
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -309,7 +417,17 @@ export default function Evaluaciones() {
         <div className="col-md-4">
           <div className="card sticky-top" style={{ top: '20px' }}>
             <div className="card-header bg-primary text-white">
-              <h5>{editando ? '✏️ Editar Evaluación' : '➕ Nueva Evaluación'}</h5>
+              <h5>
+                {editando ? (
+                  <>
+                    <i className="bi bi-pencil-square"></i> Editar Evaluación
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-plus-circle"></i> Nueva Evaluación
+                  </>
+                )}
+              </h5>
             </div>
             <div className="card-body">
               <form onSubmit={handleSubmit}>
@@ -473,11 +591,19 @@ export default function Evaluaciones() {
 
                 <div className="d-grid gap-2">
                   <button type="submit" className="btn btn-primary">
-                    {editando ? '💾 Actualizar' : '➕ Crear Evaluación'}
+                    {editando ? (
+                      <>
+                        <i className="bi bi-save"></i> Actualizar
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-plus-lg"></i> Crear Evaluación
+                      </>
+                    )}
                   </button>
                   {editando && (
                     <button type="button" className="btn btn-secondary" onClick={resetForm}>
-                      ❌ Cancelar
+                      <i className="bi bi-x-circle"></i> Cancelar
                     </button>
                   )}
                 </div>
@@ -575,14 +701,14 @@ export default function Evaluaciones() {
                                   onClick={() => handleEditar(evaluacion)}
                                   title="Editar"
                                 >
-                                  ✏️
+                                  <i className="bi bi-pencil"></i>
                                 </button>
                                 <button
                                   className="btn btn-danger"
                                   onClick={() => handleEliminar(evaluacion.id)}
                                   title="Eliminar"
                                 >
-                                  🗑️
+                                  <i className="bi bi-trash"></i>
                                 </button>
                               </div>
                             </td>

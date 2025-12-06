@@ -212,7 +212,17 @@ export default function Docentes() {
         <div className="col-md-4">
           <div className="card sticky-top" style={{ top: '20px' }}>
             <div className="card-header bg-primary text-white">
-              <h5>{editando ? '✏️ Editar Docente' : '➕ Nuevo Docente'}</h5>
+              <h5>
+                {editando ? (
+                  <>
+                    <i className="bi bi-pencil-square"></i> Editar Docente
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-person-plus"></i> Nuevo Docente
+                  </>
+                )}
+              </h5>
             </div>
             <div className="card-body" style={{ maxHeight: '600px', overflowY: 'auto' }}>
               <form onSubmit={handleSubmit}>
@@ -331,11 +341,19 @@ export default function Docentes() {
                 </div>
                 <div className="d-grid gap-2">
                   <button type="submit" className="btn btn-primary">
-                    {editando ? '💾 Actualizar' : '➕ Crear'}
+                    {editando ? (
+                      <>
+                        <i className="bi bi-save"></i> Actualizar
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-plus-lg"></i> Crear
+                      </>
+                    )}
                   </button>
                   {editando && (
                     <button type="button" className="btn btn-secondary" onClick={handleCancelar}>
-                      ❌ Cancelar
+                      <i className="bi bi-x-circle"></i> Cancelar
                     </button>
                   )}
                 </div>
@@ -398,14 +416,14 @@ export default function Docentes() {
                                 onClick={() => handleEditar(doc)}
                                 title="Editar"
                               >
-                                ✏️
+                                <i className="bi bi-pencil"></i>
                               </button>
                               <button
                                 className="btn btn-danger"
                                 onClick={() => handleEliminar(doc.id)}
                                 title="Eliminar"
                               >
-                                🗑️
+                                <i className="bi bi-trash"></i>
                               </button>
                             </div>
                           </td>

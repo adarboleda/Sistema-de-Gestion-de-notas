@@ -267,10 +267,10 @@ export default function EstudiantePerfil() {
                 </div>
                 <div className="col-md-3 text-end">
                   <button className="btn btn-danger me-2" onClick={descargarPDF}>
-                    📄 Descargar PDF
+                    <i className="bi bi-file-earmark-pdf"></i> Descargar PDF
                   </button>
                   <button className="btn btn-success" onClick={descargarExcel}>
-                    📊 Descargar Excel
+                    <i className="bi bi-file-earmark-excel"></i> Descargar Excel
                   </button>
                   <br />
                   <button
@@ -293,7 +293,7 @@ export default function EstudiantePerfil() {
             className={`nav-link ${activeTab === 'notas' ? 'active' : ''}`}
             onClick={() => setActiveTab('notas')}
           >
-            📊 Notas por Asignatura
+            <i className="bi bi-bar-chart-fill"></i> Notas por Asignatura
           </button>
         </li>
         <li className="nav-item">
@@ -301,7 +301,7 @@ export default function EstudiantePerfil() {
             className={`nav-link ${activeTab === 'evaluaciones' ? 'active' : ''}`}
             onClick={() => setActiveTab('evaluaciones')}
           >
-            📝 Evaluaciones Detalladas
+            <i className="bi bi-file-text"></i> Evaluaciones Detalladas
           </button>
         </li>
         <li className="nav-item">
@@ -309,7 +309,7 @@ export default function EstudiantePerfil() {
             className={`nav-link ${activeTab === 'historial' ? 'active' : ''}`}
             onClick={() => setActiveTab('historial')}
           >
-            📚 Historial Académico
+            <i className="bi bi-clock-history"></i> Historial Académico
           </button>
         </li>
       </ul>

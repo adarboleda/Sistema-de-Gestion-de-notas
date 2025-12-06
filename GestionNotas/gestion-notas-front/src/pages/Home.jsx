@@ -58,7 +58,9 @@ export default function Home() {
   return (
     <div className="container mt-4">
       <div className="text-center mb-4">
-        <h1 className="display-5">📊 Dashboard - Sistema de Gestión de Notas</h1>
+        <h1 className="display-5">
+          <i className="bi bi-speedometer2"></i> Dashboard - Sistema de Gestión de Notas
+        </h1>
         <p className="lead text-muted">Panel de control e información general del sistema</p>
       </div>
 
@@ -68,7 +70,9 @@ export default function Home() {
           <Link to="/estudiantes" className="text-decoration-none">
             <div className="card text-center shadow-sm h-100 border-primary">
               <div className="card-body">
-                <div className="display-4 text-primary">👨‍🎓</div>
+                <div className="display-4 text-primary">
+                  <i className="bi bi-people-fill"></i>
+                </div>
                 <h5 className="card-title mt-2">Estudiantes</h5>
                 <p className="card-text text-muted small">Gestión completa</p>
               </div>
@@ -80,7 +84,9 @@ export default function Home() {
           <Link to="/docentes" className="text-decoration-none">
             <div className="card text-center shadow-sm h-100 border-success">
               <div className="card-body">
-                <div className="display-4 text-success">👨‍🏫</div>
+                <div className="display-4 text-success">
+                  <i className="bi bi-person-badge-fill"></i>
+                </div>
                 <h5 className="card-title mt-2">Docentes</h5>
                 <p className="card-text text-muted small">Administración</p>
               </div>
@@ -92,7 +98,9 @@ export default function Home() {
           <Link to="/asignaturas" className="text-decoration-none">
             <div className="card text-center shadow-sm h-100 border-info">
               <div className="card-body">
-                <div className="display-4 text-info">📖</div>
+                <div className="display-4 text-info">
+                  <i className="bi bi-book"></i>
+                </div>
                 <h5 className="card-title mt-2">Asignaturas</h5>
                 <p className="card-text text-muted small">Materias</p>
               </div>
@@ -104,7 +112,9 @@ export default function Home() {
           <Link to="/evaluaciones" className="text-decoration-none">
             <div className="card text-center shadow-sm h-100 border-warning">
               <div className="card-body">
-                <div className="display-4 text-warning">📝</div>
+                <div className="display-4 text-warning">
+                  <i className="bi bi-clipboard-check-fill"></i>
+                </div>
                 <h5 className="card-title mt-2">Evaluaciones</h5>
                 <p className="card-text text-muted small">Parciales</p>
               </div>
@@ -119,7 +129,9 @@ export default function Home() {
         <div className="col-md-4">
           <div className="card shadow-sm h-100">
             <div className="card-header bg-primary text-white">
-              <h5 className="mb-0">📋 Actividades Recientes</h5>
+              <h5 className="mb-0">
+                <i className="bi bi-list-task"></i> Actividades Recientes
+              </h5>
             </div>
             <div className="card-body" style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {loading ? (
@@ -147,7 +159,9 @@ export default function Home() {
         <div className="col-md-4">
           <div className="card shadow-sm h-100">
             <div className="card-header bg-warning text-dark">
-              <h5 className="mb-0">🔔 Notificaciones</h5>
+              <h5 className="mb-0">
+                <i className="bi bi-bell-fill"></i> Notificaciones
+              </h5>
             </div>
             <div className="card-body" style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {loading ? (
@@ -185,7 +199,9 @@ export default function Home() {
         <div className="col-md-4">
           <div className="card shadow-sm h-100">
             <div className="card-header bg-info text-white">
-              <h5 className="mb-0">📅 Próximos Eventos (7 días)</h5>
+              <h5 className="mb-0">
+                <i className="bi bi-calendar-event"></i> Próximos Eventos (7 días)
+              </h5>
             </div>
             <div className="card-body" style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {loading ? (

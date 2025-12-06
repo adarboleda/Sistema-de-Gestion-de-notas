@@ -15,8 +15,6 @@ export default function Estudiantes() {
     direccion: '',
     fecha_nacimiento: '',
     carrera: '',
-    curso: '',
-    paralelo: '',
     estado: 'activo',
   });
   const [editando, setEditando] = useState(null);
@@ -89,8 +87,6 @@ export default function Estudiantes() {
         direccion: '',
         fecha_nacimiento: '',
         carrera: '',
-        curso: '',
-        paralelo: '',
         estado: 'activo',
       });
       setEditando(null);
@@ -111,8 +107,6 @@ export default function Estudiantes() {
       direccion: estudiante.direccion || '',
       fecha_nacimiento: estudiante.fecha_nacimiento || '',
       carrera: estudiante.carrera || '',
-      curso: estudiante.curso || '',
-      paralelo: estudiante.paralelo || '',
       estado: estudiante.estado || 'activo',
     });
     setEditando(estudiante.id);
@@ -202,7 +196,7 @@ export default function Estudiantes() {
                   onKeyPress={(e) => e.key === 'Enter' && handleBuscar()}
                 />
                 <button className="btn btn-primary" onClick={handleBuscar}>
-                  🔍 Buscar
+                  <i className="bi bi-search"></i> Buscar
                 </button>
                 <button className="btn btn-secondary" onClick={cargarEstudiantes}>
                   ↻ Todos
@@ -231,7 +225,17 @@ export default function Estudiantes() {
         <div className="col-md-4">
           <div className="card sticky-top" style={{ top: '20px' }}>
             <div className="card-header bg-primary text-white">
-              <h5>{editando ? '✏️ Editar Estudiante' : '➕ Nuevo Estudiante'}</h5>
+              <h5>
+                {editando ? (
+                  <>
+                    <i className="bi bi-pencil-square"></i> Editar Estudiante
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-person-plus"></i> Nuevo Estudiante
+                  </>
+                )}
+              </h5>
             </div>
             <div className="card-body" style={{ maxHeight: '600px', overflowY: 'auto' }}>
               <form onSubmit={handleSubmit}>
@@ -313,27 +317,6 @@ export default function Estudiantes() {
                     onChange={(e) => setForm({ ...form, carrera: e.target.value })}
                   />
                 </div>
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">Curso</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={form.curso}
-                      onChange={(e) => setForm({ ...form, curso: e.target.value })}
-                    />
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">Paralelo</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={form.paralelo}
-                      onChange={(e) => setForm({ ...form, paralelo: e.target.value })}
-                      maxLength="10"
-                    />
-                  </div>
-                </div>
                 <div className="mb-3">
                   <label className="form-label">Estado</label>
                   <select
@@ -349,11 +332,19 @@ export default function Estudiantes() {
                 </div>
                 <div className="d-grid gap-2">
                   <button type="submit" className="btn btn-primary">
-                    {editando ? '💾 Actualizar' : '➕ Crear'}
+                    {editando ? (
+                      <>
+                        <i className="bi bi-save"></i> Actualizar
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-plus-lg"></i> Crear
+                      </>
+                    )}
                   </button>
                   {editando && (
-                    <button type="button" className="btn btn-secondary" onClick={handleCancelar}>
-                      ❌ Cancelar
+                    <button type="button" className="btn btn-secondary" onClick={resetForm}>
+                      <i className="bi bi-x-circle"></i> Cancelar
                     </button>
                   )}
                 </div>
@@ -386,7 +377,7 @@ export default function Estudiantes() {
                         <th>Cédula</th>
                         <th>Nombre Completo</th>
                         <th>Email</th>
-                        <th>Curso</th>
+                        <th>Carrera</th>
                         <th>Estado</th>
                         <th>Acciones</th>
                       </tr>
@@ -404,7 +395,7 @@ export default function Estudiantes() {
                               <small>{est.email}</small>
                             </td>
                             <td>
-                              {est.curso} {est.paralelo}
+                              <small>{est.carrera}</small>
                             </td>
                             <td>
                               <span className={`badge bg-${getEstadoBadge(est.estado)}`}>
@@ -420,21 +411,21 @@ export default function Estudiantes() {
                                   }
                                   title="Ver Perfil"
                                 >
-                                  👁️
+                                  <i className="bi bi-eye"></i>
                                 </button>
                                 <button
                                   className="btn btn-warning"
                                   onClick={() => handleEditar(est)}
                                   title="Editar"
                                 >
-                                  ✏️
+                                  <i className="bi bi-pencil"></i>
                                 </button>
                                 <button
                                   className="btn btn-danger"
                                   onClick={() => handleEliminar(est.id)}
                                   title="Eliminar"
                                 >
-                                  🗑️
+                                  <i className="bi bi-trash"></i>
                                 </button>
                               </div>
                             </td>

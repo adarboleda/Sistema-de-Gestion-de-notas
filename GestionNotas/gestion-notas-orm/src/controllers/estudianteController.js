@@ -64,10 +64,22 @@ export const crearEstudiante = async (req, res) => {
 // Listar todos los estudiantes (con filtros opcionales)
 export const listarEstudiantes = async (req, res) => {
   try {
-    const { estado, curso, paralelo } = req.query;
-    const where = { eliminado: false };
+    const { estado, curso, paralelo, incluirEliminados } = req.query;
+    const where = {};
 
-    if (estado) where.estado = estado;
+    // Solo filtrar por eliminado: false si no se solicita explícitamente incluir eliminados
+    if (incluirEliminados !== 'true') {
+      where.eliminado = false;
+    }
+
+    if (estado) {
+      where.estado = estado;
+      // Si filtran por "inactivo", incluir también los eliminados lógicamente
+      if (estado === 'inactivo') {
+        delete where.eliminado;
+        where[Op.or] = [{ estado: 'inactivo', eliminado: false }, { eliminado: true }];
+      }
+    }
     if (curso) where.curso = curso;
     if (paralelo) where.paralelo = paralelo;
 

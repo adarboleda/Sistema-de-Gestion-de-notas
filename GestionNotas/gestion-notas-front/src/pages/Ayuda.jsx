@@ -6,7 +6,9 @@ export default function Ayuda() {
       {/* Sistema de Evaluación */}
       <div className="card mb-4">
         <div className="card-header bg-primary text-white">
-          <h4 className="mb-0">📚 Sistema de Evaluación por Parciales</h4>
+          <h4 className="mb-0">
+            <i className="bi bi-book-fill"></i> Sistema de Evaluación por Parciales
+          </h4>
         </div>
         <div className="card-body">
           <h5>Estructura del Sistema</h5>
