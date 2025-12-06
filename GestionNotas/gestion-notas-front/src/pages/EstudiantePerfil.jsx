@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { estudianteService } from '../services/estudianteService';
 import AlertNotification from '../components/AlertNotification';
 import { useAlert } from '../hooks/useAlert';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 export default function EstudiantePerfil() {
@@ -118,7 +119,7 @@ export default function EstudiantePerfil() {
           asig.estado,
         ]);
 
-        doc.autoTable({
+        autoTable(doc, {
           startY: 75,
           head: [
             [
