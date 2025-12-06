@@ -4,7 +4,6 @@ import { estudianteService } from '../services/estudianteService';
 import AlertNotification from '../components/AlertNotification';
 import { useAlert } from '../hooks/useAlert';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 export default function EstudiantePerfil() {
@@ -229,12 +228,7 @@ export default function EstudiantePerfil() {
 
   return (
     <div className="container-fluid mt-4">
-      <AlertNotification
-        type={alert.type}
-        message={alert.message}
-        show={alert.show}
-        onClose={hideAlert}
-      />
+      <AlertNotification alert={alert} onClose={hideAlert} />
 
       {/* Header con información del estudiante */}
       <div className="row mb-4">

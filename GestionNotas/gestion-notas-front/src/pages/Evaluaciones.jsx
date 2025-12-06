@@ -3,6 +3,8 @@ import { evaluacionService } from '../services/evaluacionService';
 import { estudianteService } from '../services/estudianteService';
 import { asignaturaService } from '../services/asignaturaService';
 import { docenteService } from '../services/docenteService';
+import AlertNotification from '../components/AlertNotification';
+import { useAlert } from '../hooks/useAlert';
 
 export default function Evaluaciones() {
   const [evaluaciones, setEvaluaciones] = useState([]);
@@ -23,6 +25,7 @@ export default function Evaluaciones() {
   const [editando, setEditando] = useState(null);
   const [loading, setLoading] = useState(false);
   const [filtroParcial, setFiltroParcial] = useState('');
+  const { alert, showSuccess, showError, showWarning, hideAlert } = useAlert();
 
   useEffect(() => {
     cargarDatos();
@@ -43,10 +46,76 @@ export default function Evaluaciones() {
       setDocentes(docData);
     } catch (error) {
       console.error('Error al cargar datos:', error);
-      alert('Error al cargar los datos');
+      showError('Error al cargar los datos');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Verificar si el estudiante está reprobado anticipadamente
+  const verificarReprobacionAnticipada = (estudianteId, asignaturaId) => {
+    const evalEstudiante = evaluaciones.filter(
+      (e) => e.estudianteId === estudianteId && e.asignaturaId === asignaturaId
+    );
+
+    const p1 = evalEstudiante.find((e) => e.parcial === 1);
+    const p2 = evalEstudiante.find((e) => e.parcial === 2);
+
+    if (p1 && p2) {
+      const suma = (p1.nota_sobre_14 || 0) + (p2.nota_sobre_14 || 0);
+      return suma < 19.6; // 28/42 * 14 = 19.6 de 28 puntos
+    }
+    return false;
+  };
+
+  // Calcular estado de una evaluación individual
+  const calcularEstadoParcial = (notaSobre14, parcial, estudianteId, asignaturaId) => {
+    // Si es parcial 1 o 2, solo mostramos si aprueba o reprueba el parcial
+    if (parcial === 1 || parcial === 2) {
+      if (notaSobre14 >= 9.8) {
+        return { estado: 'Aprobado Parcial', color: 'success' };
+      } else {
+        return { estado: 'Reprobado Parcial', color: 'danger' };
+      }
+    }
+
+    // Para parcial 3, verificamos si hubo reprobación anticipada
+    if (parcial === 3) {
+      const evalEstudiante = evaluaciones.filter(
+        (e) => e.estudianteId === estudianteId && e.asignaturaId === asignaturaId
+      );
+
+      const p1 = evalEstudiante.find((e) => e.parcial === 1);
+      const p2 = evalEstudiante.find((e) => e.parcial === 2);
+      const p3 = evalEstudiante.find((e) => e.parcial === 3);
+
+      if (p1 && p2) {
+        const sumaP1P2 = (p1.nota_sobre_14 || 0) + (p2.nota_sobre_14 || 0);
+        if (sumaP1P2 < 19.6) {
+          return { estado: 'Reprobado Semestre', color: 'danger' };
+        }
+
+        // Si tiene P3, calcular estado final del semestre
+        if (p3) {
+          const totalSemestre = sumaP1P2 + (p3.nota_sobre_14 || 0);
+          if (totalSemestre >= 29.4) {
+            // 42/42 * 14 = 29.4 de 42 puntos
+            return { estado: 'Aprobado Semestre', color: 'success' };
+          } else {
+            return { estado: 'Reprobado Semestre', color: 'danger' };
+          }
+        }
+      }
+
+      // Si solo hay P3, mostrar si aprueba el parcial
+      if (notaSobre14 >= 9.8) {
+        return { estado: 'Aprobado Parcial', color: 'success' };
+      } else {
+        return { estado: 'Reprobado Parcial', color: 'danger' };
+      }
+    }
+
+    return { estado: 'En Curso', color: 'warning' };
   };
 
   const calcularNotaParcial = () => {
@@ -74,13 +143,24 @@ export default function Evaluaciones() {
     e.preventDefault();
 
     if (!form.estudianteId || !form.asignaturaId || !form.docenteId) {
-      alert('Por favor seleccione estudiante, asignatura y docente');
+      showError('Por favor seleccione estudiante, asignatura y docente');
       return;
     }
 
     if (!form.tarea || !form.informe || !form.leccion || !form.examen) {
-      alert('Por favor complete todas las notas (Tarea, Informe, Lección, Examen)');
+      showError('Por favor complete todas las notas (Tarea, Informe, Lección, Examen)');
       return;
+    }
+
+    // Verificar si es P3 y el estudiante está reprobado anticipadamente
+    if (form.parcial === 3 && !editando) {
+      const reprobado = verificarReprobacionAnticipada(form.estudianteId, form.asignaturaId);
+      if (reprobado) {
+        showError(
+          'Este estudiante está reprobado anticipadamente (P1 + P2 < 28). No puede registrar notas de Parcial 3.'
+        );
+        return;
+      }
     }
 
     const datos = {
@@ -94,10 +174,10 @@ export default function Evaluaciones() {
     try {
       if (editando) {
         await evaluacionService.actualizar(editando, datos);
-        alert('Evaluación actualizada exitosamente');
+        showSuccess('Evaluación actualizada exitosamente');
       } else {
         await evaluacionService.crear(datos);
-        alert(
+        showSuccess(
           'Evaluación creada exitosamente. El registro académico se actualizó automáticamente.'
         );
       }
@@ -105,7 +185,7 @@ export default function Evaluaciones() {
       cargarDatos();
     } catch (error) {
       console.error('Error:', error);
-      alert(error.message || 'Error al guardar la evaluación');
+      showError(error.message || 'Error al guardar la evaluación');
     }
   };
 
@@ -153,7 +233,17 @@ export default function Evaluaciones() {
   };
 
   const getEstadoBadge = (estado) => {
-    return estado === 'aprobado' ? 'success' : estado === 'reprobado' ? 'danger' : 'warning';
+    switch (estado) {
+      case 'Aprobado Parcial':
+      case 'Aprobado Semestre':
+        return 'success';
+      case 'Reprobado Parcial':
+      case 'Reprobado Semestre':
+      case 'Reprobado Anticipado':
+        return 'danger';
+      default:
+        return 'warning';
+    }
   };
 
   const evaluacionesFiltradas = evaluaciones.filter(
@@ -464,9 +554,19 @@ export default function Evaluaciones() {
                               <strong className="text-primary">{evaluacion.nota_sobre_14}</strong>
                             </td>
                             <td>
-                              <span className={`badge bg-${getEstadoBadge(evaluacion.estado)}`}>
-                                {evaluacion.estado}
-                              </span>
+                              {(() => {
+                                const estadoInfo = calcularEstadoParcial(
+                                  evaluacion.nota_sobre_14,
+                                  evaluacion.parcial,
+                                  evaluacion.estudianteId,
+                                  evaluacion.asignaturaId
+                                );
+                                return (
+                                  <span className={`badge bg-${estadoInfo.color}`}>
+                                    {estadoInfo.estado}
+                                  </span>
+                                );
+                              })()}
                             </td>
                             <td>
                               <div className="btn-group btn-group-sm">
@@ -497,6 +597,7 @@ export default function Evaluaciones() {
           </div>
         </div>
       </div>
+      <AlertNotification alert={alert} onClose={hideAlert} />
     </div>
   );
 }
