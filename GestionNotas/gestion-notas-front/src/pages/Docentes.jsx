@@ -18,6 +18,7 @@ export default function Docentes() {
     area: '',
     carga_horaria: 0,
     estado: 'activo',
+    password: '', // Agregar campo password
   });
   const [editando, setEditando] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -67,7 +68,9 @@ export default function Docentes() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.cedula || !form.nombre || !form.apellido || !form.email) {
-      showWarning('Por favor complete los campos obligatorios (Cédula, Nombre, Apellido, Email)');
+      showWarning(
+        'Por favor complete los campos obligatorios (Cédula, Nombre, Apellido, Email)'
+      );
       return;
     }
 
@@ -91,6 +94,7 @@ export default function Docentes() {
         area: '',
         carga_horaria: 0,
         estado: 'activo',
+        password: '',
       });
       setEditando(null);
       cargarDocentes();
@@ -148,6 +152,7 @@ export default function Docentes() {
       area: '',
       carga_horaria: 0,
       estado: 'activo',
+      password: '',
     });
     setEditando(null);
   };
@@ -224,7 +229,10 @@ export default function Docentes() {
                 )}
               </h5>
             </div>
-            <div className="card-body" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+            <div
+              className="card-body"
+              style={{ maxHeight: '600px', overflowY: 'auto' }}
+            >
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label className="form-label">Cédula *</label>
@@ -232,7 +240,9 @@ export default function Docentes() {
                     type="text"
                     className="form-control"
                     value={form.cedula}
-                    onChange={(e) => setForm({ ...form, cedula: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, cedula: e.target.value })
+                    }
                     maxLength="10"
                     required
                   />
@@ -243,7 +253,9 @@ export default function Docentes() {
                     type="text"
                     className="form-control"
                     value={form.nombre}
-                    onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, nombre: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -253,7 +265,9 @@ export default function Docentes() {
                     type="text"
                     className="form-control"
                     value={form.apellido}
-                    onChange={(e) => setForm({ ...form, apellido: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, apellido: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -263,7 +277,9 @@ export default function Docentes() {
                     type="email"
                     className="form-control"
                     value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, email: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -273,7 +289,9 @@ export default function Docentes() {
                     type="tel"
                     className="form-control"
                     value={form.telefono}
-                    onChange={(e) => setForm({ ...form, telefono: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, telefono: e.target.value })
+                    }
                   />
                 </div>
                 <div className="mb-3">
@@ -282,7 +300,9 @@ export default function Docentes() {
                     className="form-control"
                     rows="2"
                     value={form.direccion}
-                    onChange={(e) => setForm({ ...form, direccion: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, direccion: e.target.value })
+                    }
                   />
                 </div>
                 <div className="mb-3">
@@ -291,7 +311,9 @@ export default function Docentes() {
                     type="text"
                     className="form-control"
                     value={form.titulo_academico}
-                    onChange={(e) => setForm({ ...form, titulo_academico: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, titulo_academico: e.target.value })
+                    }
                     placeholder="Ej: Ingeniero, Licenciado, PhD"
                   />
                 </div>
@@ -301,8 +323,27 @@ export default function Docentes() {
                     type="text"
                     className="form-control"
                     value={form.especialidad}
-                    onChange={(e) => setForm({ ...form, especialidad: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, especialidad: e.target.value })
+                    }
                   />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Contraseña</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    value={form.password || ''}
+                    onChange={(e) =>
+                      setForm({ ...form, password: e.target.value })
+                    }
+                    placeholder="Por defecto: cédula del docente"
+                  />
+                  <small className="text-muted">
+                    {editando
+                      ? 'Dejar vacío para mantener la contraseña actual'
+                      : 'Si no se especifica, se usará la cédula como contraseña'}
+                  </small>
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Área</label>
@@ -315,13 +356,18 @@ export default function Docentes() {
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Carga Horaria (horas/semana)</label>
+                  <label className="form-label">
+                    Carga Horaria (horas/semana)
+                  </label>
                   <input
                     type="number"
                     className="form-control"
                     value={form.carga_horaria}
                     onChange={(e) =>
-                      setForm({ ...form, carga_horaria: parseInt(e.target.value) || 0 })
+                      setForm({
+                        ...form,
+                        carga_horaria: parseInt(e.target.value) || 0,
+                      })
                     }
                     min="0"
                     max="60"
@@ -332,7 +378,9 @@ export default function Docentes() {
                   <select
                     className="form-select"
                     value={form.estado}
-                    onChange={(e) => setForm({ ...form, estado: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, estado: e.target.value })
+                    }
                   >
                     <option value="activo">Activo</option>
                     <option value="inactivo">Inactivo</option>
@@ -352,7 +400,11 @@ export default function Docentes() {
                     )}
                   </button>
                   {editando && (
-                    <button type="button" className="btn btn-secondary" onClick={handleCancelar}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={handleCancelar}
+                    >
                       <i className="bi bi-x-circle"></i> Cancelar
                     </button>
                   )}
@@ -367,7 +419,9 @@ export default function Docentes() {
           <div className="card">
             <div className="card-header bg-success text-white d-flex justify-content-between align-items-center">
               <h5 className="mb-0">📋 Lista de Docentes</h5>
-              <span className="badge bg-light text-dark">{docentes.length} registros</span>
+              <span className="badge bg-light text-dark">
+                {docentes.length} registros
+              </span>
             </div>
             <div className="card-body">
               {loading ? (
@@ -377,7 +431,9 @@ export default function Docentes() {
                   </div>
                 </div>
               ) : docentes.length === 0 ? (
-                <p className="text-center text-muted py-5">No hay docentes para mostrar</p>
+                <p className="text-center text-muted py-5">
+                  No hay docentes para mostrar
+                </p>
               ) : (
                 <div className="table-responsive">
                   <table className="table table-hover table-sm">
@@ -403,9 +459,15 @@ export default function Docentes() {
                             <small>{doc.email}</small>
                           </td>
                           <td>{doc.area || '-'}</td>
-                          <td className="text-center">{doc.carga_horaria || 0}</td>
+                          <td className="text-center">
+                            {doc.carga_horaria || 0}
+                          </td>
                           <td>
-                            <span className={`badge bg-${getEstadoBadge(doc.estado)}`}>
+                            <span
+                              className={`badge bg-${getEstadoBadge(
+                                doc.estado
+                              )}`}
+                            >
                               {doc.estado}
                             </span>
                           </td>

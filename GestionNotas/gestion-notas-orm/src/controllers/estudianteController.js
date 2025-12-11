@@ -1,5 +1,9 @@
 import { Estudiante } from '../models/estudiante.js';
 import { Op } from 'sequelize';
+import fetch from 'node-fetch';
+
+// URL del servicio de autenticación
+const AUTH_API_URL = 'http://localhost:3001/api';
 
 // Crear un nuevo estudiante
 export const crearEstudiante = async (req, res) => {
@@ -18,6 +22,7 @@ export const crearEstudiante = async (req, res) => {
       paralelo,
       estado,
       fecha_matricula,
+      password, // Nueva contraseña
     } = req.body;
 
     // Validaciones básicas
@@ -56,6 +61,48 @@ export const crearEstudiante = async (req, res) => {
       estado: estado || 'activo',
       fecha_matricula: fecha_matricula || new Date(),
     });
+
+    // Crear usuario en el sistema de autenticación
+    try {
+      const passwordFinal = password || cedula; // Por defecto, la cédula
+
+      console.log('🔐 Intentando crear usuario en oauth-api...');
+      console.log('   URL:', `${AUTH_API_URL}/users/crear-estudiante`);
+      console.log('   Email:', nuevoEstudiante.email);
+      console.log('   Password:', passwordFinal ? '***' : '(vacío)');
+
+      const responseAuth = await fetch(
+        `${AUTH_API_URL}/users/crear-estudiante`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: nuevoEstudiante.email,
+            password: passwordFinal,
+            nombre_completo: `${nuevoEstudiante.nombre} ${nuevoEstudiante.apellido}`,
+            estudiante_id: nuevoEstudiante.id,
+          }),
+        }
+      );
+
+      const responseData = await responseAuth.json();
+
+      if (!responseAuth.ok) {
+        console.error('❌ Error al crear usuario en oauth-api:');
+        console.error('   Status:', responseAuth.status);
+        console.error('   Respuesta:', responseData);
+      } else {
+        console.log('✅ Usuario creado exitosamente en oauth-api');
+        console.log(
+          '   ID Usuario:',
+          responseData.data?.id || responseData.usuario?.id
+        );
+      }
+    } catch (authError) {
+      console.error('❌ Error de conexión con oauth-api:', authError.message);
+      console.error('   Verifica que oauth-api esté corriendo en puerto 3001');
+      // No fallar la creación del estudiante si falla el auth
+    }
 
     res.status(201).json(nuevoEstudiante);
   } catch (error) {
@@ -164,6 +211,7 @@ export const actualizarEstudiante = async (req, res) => {
       curso,
       paralelo,
       estado,
+      password, // Nueva contraseña opcional
     } = req.body;
 
     const estudiante = await Estudiante.findByPk(id);
@@ -225,6 +273,40 @@ export const actualizarEstudiante = async (req, res) => {
     console.log(
       `Estudiante actualizado - ID: ${id}, Estado: ${estudiante.estado}, Eliminado: ${estudiante.eliminado}`
     );
+
+    // Actualizar contraseña en oauth-api si se proporcionó
+    if (password) {
+      try {
+        console.log('🔐 Actualizando contraseña en oauth-api...');
+        console.log('   Email:', estudiante.email);
+
+        const responseAuth = await fetch(
+          `${AUTH_API_URL}/users/actualizar-password-estudiante`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              estudiante_id: estudiante.id,
+              password: password,
+            }),
+          }
+        );
+
+        const responseData = await responseAuth.json();
+
+        if (!responseAuth.ok) {
+          console.error('❌ Error al actualizar contraseña en oauth-api:');
+          console.error('   Status:', responseAuth.status);
+          console.error('   Respuesta:', responseData);
+        } else {
+          console.log('✅ Contraseña actualizada exitosamente en oauth-api');
+        }
+      } catch (authError) {
+        console.error('❌ Error de conexión con oauth-api:', authError.message);
+        // No fallar la actualización del estudiante si falla el auth
+      }
+    }
+
     res.status(200).json(estudiante);
   } catch (error) {
     console.error('Error al actualizar estudiante:', error);

@@ -17,6 +17,7 @@ export default function Estudiantes() {
     carrera: '',
     foto: '',
     estado: 'activo',
+    password: '', // Agregar campo password
   });
   const [editando, setEditando] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -173,6 +174,7 @@ export default function Estudiantes() {
         carrera: '',
         foto: '',
         estado: 'activo',
+        password: '',
       });
       setEditando(null);
       cargarEstudiantes();
@@ -229,6 +231,7 @@ export default function Estudiantes() {
       curso: '',
       paralelo: '',
       estado: 'activo',
+      password: '',
     });
     setEditando(null);
   };
@@ -425,6 +428,23 @@ export default function Estudiantes() {
                     }
                     required
                   />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Contraseña</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    value={form.password || ''}
+                    onChange={(e) =>
+                      setForm({ ...form, password: e.target.value })
+                    }
+                    placeholder="Por defecto: cédula del estudiante"
+                  />
+                  <small className="text-muted">
+                    {editando
+                      ? 'Dejar vacío para mantener la contraseña actual'
+                      : 'Si no se especifica, se usará la cédula como contraseña'}
+                  </small>
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Foto del Estudiante</label>
