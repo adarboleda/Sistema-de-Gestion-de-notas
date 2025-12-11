@@ -21,10 +21,11 @@ export const crearEstudiante = async (req, res) => {
     } = req.body;
 
     // Validaciones básicas
-    if (!cedula || !nombre || !apellido || !email) {
-      return res
-        .status(400)
-        .json({ error: 'Faltan datos obligatorios (cedula, nombre, apellido, email)' });
+    if (!cedula || !nombre || !apellido || !email || !carrera) {
+      return res.status(400).json({
+        error:
+          'Faltan datos obligatorios (cedula, nombre, apellido, email, carrera)',
+      });
     }
 
     // Verificar si ya existe un estudiante con esa cédula o email
@@ -35,7 +36,9 @@ export const crearEstudiante = async (req, res) => {
     });
 
     if (existente) {
-      return res.status(400).json({ error: 'Ya existe un estudiante con esa cédula o email' });
+      return res
+        .status(400)
+        .json({ error: 'Ya existe un estudiante con esa cédula o email' });
     }
 
     const nuevoEstudiante = await Estudiante.create({
@@ -57,7 +60,9 @@ export const crearEstudiante = async (req, res) => {
     res.status(201).json(nuevoEstudiante);
   } catch (error) {
     console.error('Error al crear estudiante:', error);
-    res.status(500).json({ error: 'Error al crear el estudiante', detalles: error.message });
+    res
+      .status(500)
+      .json({ error: 'Error al crear el estudiante', detalles: error.message });
   }
 };
 
@@ -77,7 +82,10 @@ export const listarEstudiantes = async (req, res) => {
       // Si filtran por "inactivo", incluir también los eliminados lógicamente
       if (estado === 'inactivo') {
         delete where.eliminado;
-        where[Op.or] = [{ estado: 'inactivo', eliminado: false }, { eliminado: true }];
+        where[Op.or] = [
+          { estado: 'inactivo', eliminado: false },
+          { eliminado: true },
+        ];
       }
     }
     if (curso) where.curso = curso;
@@ -97,7 +105,9 @@ export const buscarEstudiante = async (req, res) => {
     const { termino } = req.query;
 
     if (!termino) {
-      return res.status(400).json({ error: 'Debe proporcionar un término de búsqueda' });
+      return res
+        .status(400)
+        .json({ error: 'Debe proporcionar un término de búsqueda' });
     }
 
     const estudiantes = await Estudiante.findAll({
@@ -169,14 +179,19 @@ export const actualizarEstudiante = async (req, res) => {
           [Op.and]: [
             { id: { [Op.ne]: id } },
             {
-              [Op.or]: [cedula ? { cedula } : null, email ? { email } : null].filter(Boolean),
+              [Op.or]: [
+                cedula ? { cedula } : null,
+                email ? { email } : null,
+              ].filter(Boolean),
             },
           ],
         },
       });
 
       if (existente) {
-        return res.status(400).json({ error: 'Ya existe otro estudiante con esa cédula o email' });
+        return res
+          .status(400)
+          .json({ error: 'Ya existe otro estudiante con esa cédula o email' });
       }
     }
 
@@ -187,18 +202,36 @@ export const actualizarEstudiante = async (req, res) => {
     if (email) estudiante.email = email;
     if (telefono !== undefined) estudiante.telefono = telefono;
     if (direccion !== undefined) estudiante.direccion = direccion;
-    if (fecha_nacimiento !== undefined) estudiante.fecha_nacimiento = fecha_nacimiento;
+    if (fecha_nacimiento !== undefined)
+      estudiante.fecha_nacimiento = fecha_nacimiento;
     if (carrera !== undefined) estudiante.carrera = carrera;
     if (foto !== undefined) estudiante.foto = foto;
     if (curso !== undefined) estudiante.curso = curso;
     if (paralelo !== undefined) estudiante.paralelo = paralelo;
-    if (estado !== undefined) estudiante.estado = estado;
+
+    // Manejar estado y restauración de estudiantes eliminados
+    if (estado !== undefined) {
+      estudiante.estado = estado;
+      // Si se cambia a 'activo', restaurar el estudiante (quitar flag de eliminado)
+      if (estado === 'activo') {
+        estudiante.eliminado = false;
+        console.log(
+          `Restaurando estudiante ID ${id}: eliminado cambiado a false`
+        );
+      }
+    }
 
     await estudiante.save();
+    console.log(
+      `Estudiante actualizado - ID: ${id}, Estado: ${estudiante.estado}, Eliminado: ${estudiante.eliminado}`
+    );
     res.status(200).json(estudiante);
   } catch (error) {
     console.error('Error al actualizar estudiante:', error);
-    res.status(500).json({ error: 'Error al actualizar el estudiante', detalles: error.message });
+    res.status(500).json({
+      error: 'Error al actualizar el estudiante',
+      detalles: error.message,
+    });
   }
 };
 
@@ -213,7 +246,9 @@ export const eliminarEstudiante = async (req, res) => {
       estudiante.eliminado = true;
       estudiante.estado = 'inactivo';
       await estudiante.save();
-      res.status(200).json({ message: 'Estudiante eliminado exitosamente', estudiante });
+      res
+        .status(200)
+        .json({ message: 'Estudiante eliminado exitosamente', estudiante });
     } else {
       res.status(404).json({ error: 'Estudiante no encontrado' });
     }
@@ -245,6 +280,8 @@ export const cambiarEstadoEstudiante = async (req, res) => {
     res.status(200).json(estudiante);
   } catch (error) {
     console.error('Error al cambiar estado:', error);
-    res.status(500).json({ error: 'Error al cambiar el estado del estudiante' });
+    res
+      .status(500)
+      .json({ error: 'Error al cambiar el estado del estudiante' });
   }
 };

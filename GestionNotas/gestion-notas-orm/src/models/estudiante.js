@@ -43,9 +43,10 @@ export const Estudiante = sequelize.define(
       allowNull: true,
     },
     foto: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT('long'),
       allowNull: true,
       defaultValue: null,
+      comment: 'URL o base64 de la foto del estudiante',
     },
     carrera: {
       type: DataTypes.STRING(100),

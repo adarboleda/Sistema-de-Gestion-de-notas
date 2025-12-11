@@ -29,7 +29,9 @@ export default function EstudiantePerfil() {
       setEstudiante(estudianteData);
 
       // Cargar evaluaciones del estudiante
-      const response = await fetch(`http://localhost:3000/api/evaluaciones?estudianteId=${id}`);
+      const response = await fetch(
+        `http://localhost:3000/api/evaluaciones?estudianteId=${id}`
+      );
       const evaluacionesData = await response.json();
       setEvaluaciones(evaluacionesData);
 
@@ -190,7 +192,10 @@ export default function EstudiantePerfil() {
       }
 
       datosEstudiante.push([]);
-      datosEstudiante.push(['Generado el:', new Date().toLocaleDateString('es-EC')]);
+      datosEstudiante.push([
+        'Generado el:',
+        new Date().toLocaleDateString('es-EC'),
+      ]);
 
       // Crear workbook y worksheet
       const ws = XLSX.utils.aoa_to_sheet(datosEstudiante);
@@ -198,7 +203,10 @@ export default function EstudiantePerfil() {
       XLSX.utils.book_append_sheet(wb, ws, 'Reporte Académico');
 
       // Descargar
-      XLSX.writeFile(wb, `reporte_${estudiante.cedula}_${estudiante.nombre}.xlsx`);
+      XLSX.writeFile(
+        wb,
+        `reporte_${estudiante.cedula}_${estudiante.nombre}.xlsx`
+      );
       showSuccess('Excel descargado exitosamente');
     } catch (error) {
       console.error('Error al generar Excel:', error);
@@ -220,7 +228,10 @@ export default function EstudiantePerfil() {
     return (
       <div className="container mt-5">
         <div className="alert alert-danger">Estudiante no encontrado</div>
-        <button className="btn btn-secondary" onClick={() => navigate('/estudiantes')}>
+        <button
+          className="btn btn-secondary"
+          onClick={() => navigate('/estudiantes')}
+        >
           Volver
         </button>
       </div>
@@ -238,24 +249,49 @@ export default function EstudiantePerfil() {
             <div className="card-body">
               <div className="row align-items-center">
                 <div className="col-md-2 text-center">
-                  <div
-                    className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto"
-                    style={{ width: '100px', height: '100px', fontSize: '2.5rem' }}
-                  >
-                    {estudiante.nombre.charAt(0)}
-                    {estudiante.apellido.charAt(0)}
-                  </div>
+                  {estudiante.foto ? (
+                    <img
+                      src={estudiante.foto}
+                      alt={`${estudiante.nombre} ${estudiante.apellido}`}
+                      className="rounded-circle img-thumbnail"
+                      style={{
+                        width: '120px',
+                        height: '120px',
+                        objectFit: 'cover',
+                      }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src =
+                          'https://via.placeholder.com/120?text=' +
+                          estudiante.nombre.charAt(0) +
+                          estudiante.apellido.charAt(0);
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto"
+                      style={{
+                        width: '120px',
+                        height: '120px',
+                        fontSize: '2.5rem',
+                      }}
+                    >
+                      {estudiante.nombre.charAt(0)}
+                      {estudiante.apellido.charAt(0)}
+                    </div>
+                  )}
                 </div>
                 <div className="col-md-7">
                   <h2 className="mb-1">
                     {estudiante.nombre} {estudiante.apellido}
                   </h2>
                   <p className="text-muted mb-2">
-                    <strong>Cédula:</strong> {estudiante.cedula} |<strong> Email:</strong>{' '}
-                    {estudiante.email}
+                    <strong>Cédula:</strong> {estudiante.cedula} |
+                    <strong> Email:</strong> {estudiante.email}
                   </p>
                   <p className="mb-0">
-                    <strong>Carrera:</strong> {estudiante.carrera} |<strong> Estado:</strong>{' '}
+                    <strong>Carrera:</strong> {estudiante.carrera} |
+                    <strong> Estado:</strong>{' '}
                     <span
                       className={`badge bg-${
                         estudiante.estado === 'activo' ? 'success' : 'secondary'
@@ -266,7 +302,10 @@ export default function EstudiantePerfil() {
                   </p>
                 </div>
                 <div className="col-md-3 text-end">
-                  <button className="btn btn-danger me-2" onClick={descargarPDF}>
+                  <button
+                    className="btn btn-danger me-2"
+                    onClick={descargarPDF}
+                  >
                     <i className="bi bi-file-earmark-pdf"></i> Descargar PDF
                   </button>
                   <button className="btn btn-success" onClick={descargarExcel}>
@@ -298,7 +337,9 @@ export default function EstudiantePerfil() {
         </li>
         <li className="nav-item">
           <button
-            className={`nav-link ${activeTab === 'evaluaciones' ? 'active' : ''}`}
+            className={`nav-link ${
+              activeTab === 'evaluaciones' ? 'active' : ''
+            }`}
             onClick={() => setActiveTab('evaluaciones')}
           >
             <i className="bi bi-file-text"></i> Evaluaciones Detalladas
@@ -354,20 +395,28 @@ export default function EstudiantePerfil() {
                   </thead>
                   <tbody>
                     {Object.values(resumenAcademico).map((asig, idx) => {
-                      const promedio = ((asig.totalSobre42 / 42) * 20).toFixed(2);
+                      const promedio = ((asig.totalSobre42 / 42) * 20).toFixed(
+                        2
+                      );
                       return (
                         <tr key={idx}>
                           <td>
                             <strong>{asig.asignatura}</strong>
                           </td>
                           <td className="text-center">
-                            {asig.parciales[1] !== null ? asig.parciales[1].toFixed(2) : '-'}
+                            {asig.parciales[1] !== null
+                              ? asig.parciales[1].toFixed(2)
+                              : '-'}
                           </td>
                           <td className="text-center">
-                            {asig.parciales[2] !== null ? asig.parciales[2].toFixed(2) : '-'}
+                            {asig.parciales[2] !== null
+                              ? asig.parciales[2].toFixed(2)
+                              : '-'}
                           </td>
                           <td className="text-center">
-                            {asig.parciales[3] !== null ? asig.parciales[3].toFixed(2) : '-'}
+                            {asig.parciales[3] !== null
+                              ? asig.parciales[3].toFixed(2)
+                              : '-'}
                           </td>
                           <td className="text-center">
                             <strong>{asig.totalSobre42.toFixed(2)}</strong>
@@ -376,7 +425,9 @@ export default function EstudiantePerfil() {
                             <strong>{promedio}</strong>
                           </td>
                           <td className="text-center">
-                            <span className={`badge bg-${asig.estadoColor}`}>{asig.estado}</span>
+                            <span className={`badge bg-${asig.estadoColor}`}>
+                              {asig.estado}
+                            </span>
                           </td>
                         </tr>
                       );
@@ -433,7 +484,9 @@ export default function EstudiantePerfil() {
                           <strong>{ev.nota_sobre_14.toFixed(2)}</strong>
                         </td>
                         <td>
-                          <small>{new Date(ev.fecha_evaluacion).toLocaleDateString()}</small>
+                          <small>
+                            {new Date(ev.fecha_evaluacion).toLocaleDateString()}
+                          </small>
                         </td>
                       </tr>
                     ))}
@@ -441,7 +494,9 @@ export default function EstudiantePerfil() {
                 </table>
               </div>
             ) : (
-              <p className="text-muted text-center py-5">No hay evaluaciones registradas</p>
+              <p className="text-muted text-center py-5">
+                No hay evaluaciones registradas
+              </p>
             )}
           </div>
         </div>
@@ -461,16 +516,19 @@ export default function EstudiantePerfil() {
                     <strong>Cédula:</strong> {estudiante.cedula}
                   </li>
                   <li className="list-group-item">
-                    <strong>Nombre:</strong> {estudiante.nombre} {estudiante.apellido}
+                    <strong>Nombre:</strong> {estudiante.nombre}{' '}
+                    {estudiante.apellido}
                   </li>
                   <li className="list-group-item">
                     <strong>Email:</strong> {estudiante.email}
                   </li>
                   <li className="list-group-item">
-                    <strong>Teléfono:</strong> {estudiante.telefono || 'No registrado'}
+                    <strong>Teléfono:</strong>{' '}
+                    {estudiante.telefono || 'No registrado'}
                   </li>
                   <li className="list-group-item">
-                    <strong>Dirección:</strong> {estudiante.direccion || 'No registrada'}
+                    <strong>Dirección:</strong>{' '}
+                    {estudiante.direccion || 'No registrada'}
                   </li>
                 </ul>
               </div>
@@ -488,7 +546,9 @@ export default function EstudiantePerfil() {
                   </li>
                   <li className="list-group-item">
                     <strong>Asignaturas Cursadas:</strong>{' '}
-                    {resumenAcademico ? Object.keys(resumenAcademico).length : 0}
+                    {resumenAcademico
+                      ? Object.keys(resumenAcademico).length
+                      : 0}
                   </li>
                 </ul>
               </div>

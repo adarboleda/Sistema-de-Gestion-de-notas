@@ -8,6 +8,14 @@ export const estudianteService = {
     return await response.json();
   },
 
+  // Listar estudiantes por estado (incluye eliminados si es 'inactivo')
+  async listarPorEstado(estado) {
+    const url = estado ? `${API_URL}?estado=${estado}` : API_URL;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Error al cargar estudiantes');
+    return await response.json();
+  },
+
   // Buscar estudiante por cédula, nombre o ID
   async buscar(termino) {
     const response = await fetch(`${API_URL}/buscar?termino=${termino}`);
