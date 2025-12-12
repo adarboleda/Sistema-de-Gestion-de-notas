@@ -1,4 +1,5 @@
 import { Docente } from '../models/docente.js';
+import { Estudiante } from '../models/estudiante.js';
 import { Asignatura } from '../models/asignatura.js';
 import { Op } from 'sequelize';
 import fetch from 'node-fetch';
@@ -25,24 +26,50 @@ export const crearDocente = async (req, res) => {
       password, // Nueva contraseña
     } = req.body;
 
-    if (!cedula || !nombre || !apellido || !email) {
+    if (
+      !cedula ||
+      !nombre ||
+      !apellido ||
+      !email ||
+      !titulo_academico ||
+      !especialidad ||
+      !area ||
+      carga_horaria === undefined
+    ) {
       return res.status(400).json({
         error:
-          'Faltan datos obligatorios: cédula, nombre, apellido y email son requeridos',
+          'Faltan datos obligatorios: cédula, nombre, apellido, email, título académico, especialidad, área y carga horaria son requeridos',
       });
     }
 
     // Verificar si ya existe un docente con esa cédula o email
-    const existente = await Docente.findOne({
+    const docenteExistente = await Docente.findOne({
       where: {
         [Op.or]: [{ cedula }, { email }],
       },
     });
 
-    if (existente) {
-      return res
-        .status(400)
-        .json({ error: 'Ya existe un docente con esa cédula o email' });
+    if (docenteExistente) {
+      if (docenteExistente.cedula === cedula) {
+        return res.status(400).json({
+          error: 'Ya existe un docente registrado con esa cédula',
+        });
+      }
+      return res.status(400).json({
+        error: 'Ya existe un docente registrado con ese email',
+      });
+    }
+
+    // Verificar que la cédula no esté registrada en estudiantes
+    const estudianteExistente = await Estudiante.findOne({
+      where: { cedula },
+    });
+
+    if (estudianteExistente) {
+      return res.status(400).json({
+        error:
+          'La cédula ya está registrada para un estudiante. No puede usar la misma cédula para un docente.',
+      });
     }
 
     const nuevoDocente = await Docente.create({
@@ -217,7 +244,8 @@ export const actualizarDocente = async (req, res) => {
 
     // Verificar si se está cambiando cédula o email a uno ya existente
     if (cedula || email) {
-      const existente = await Docente.findOne({
+      // Verificar que no exista otro docente con esa cédula o email
+      const docenteExistente = await Docente.findOne({
         where: {
           [Op.and]: [
             { id: { [Op.ne]: id } },
@@ -231,10 +259,29 @@ export const actualizarDocente = async (req, res) => {
         },
       });
 
-      if (existente) {
-        return res
-          .status(400)
-          .json({ error: 'Ya existe otro docente con esa cédula o email' });
+      if (docenteExistente) {
+        if (docenteExistente.cedula === cedula) {
+          return res.status(400).json({
+            error: 'Ya existe otro docente registrado con esa cédula',
+          });
+        }
+        return res.status(400).json({
+          error: 'Ya existe otro docente registrado con ese email',
+        });
+      }
+
+      // Verificar que la cédula no esté registrada en estudiantes (solo si se está cambiando la cédula)
+      if (cedula && cedula !== docente.cedula) {
+        const estudianteExistente = await Estudiante.findOne({
+          where: { cedula },
+        });
+
+        if (estudianteExistente) {
+          return res.status(400).json({
+            error:
+              'La cédula ya está registrada para un estudiante. No puede usar la misma cédula.',
+          });
+        }
       }
     }
 

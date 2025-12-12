@@ -53,12 +53,6 @@ export default function Navbar() {
                     <i className="bi bi-person-badge-fill"></i> Docentes
                   </Link>
                 </li>
-              </>
-            )}
-
-            {/* Para ADMIN y DOCENTE */}
-            {(user?.rol === 'admin' || user?.rol === 'docente') && (
-              <>
                 <li className="nav-item">
                   <Link className="nav-link" to="/asignaturas">
                     <i className="bi bi-book-fill"></i> Asignaturas
@@ -70,6 +64,15 @@ export default function Navbar() {
                   </Link>
                 </li>
               </>
+            )}
+
+            {/* Solo para DOCENTE - Solo Evaluaciones */}
+            {user?.rol === 'docente' && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/evaluaciones">
+                  <i className="bi bi-clipboard-check-fill"></i> Evaluaciones
+                </Link>
+              </li>
             )}
 
             {/* Solo para ESTUDIANTE - Link a su perfil académico */}

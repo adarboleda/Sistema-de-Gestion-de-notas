@@ -12,9 +12,10 @@ export default function EstudiantePerfil() {
   const navigate = useNavigate();
   const [estudiante, setEstudiante] = useState(null);
   const [evaluaciones, setEvaluaciones] = useState([]);
+  const [asignaturas, setAsignaturas] = useState([]);
   const [resumenAcademico, setResumenAcademico] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('notas');
+  const [activeTab, setActiveTab] = useState('asignaturas');
   const { alert, showSuccess, showError, hideAlert } = useAlert();
 
   useEffect(() => {
@@ -34,6 +35,24 @@ export default function EstudiantePerfil() {
       );
       const evaluacionesData = await response.json();
       setEvaluaciones(evaluacionesData);
+
+      // Extraer asignaturas únicas de las evaluaciones
+      const asignaturasUnicas = [];
+      const asignaturasMap = new Map();
+
+      evaluacionesData.forEach((ev) => {
+        if (ev.Asignatura && !asignaturasMap.has(ev.Asignatura.id)) {
+          asignaturasMap.set(ev.Asignatura.id, {
+            id: ev.Asignatura.id,
+            codigo: ev.Asignatura.codigo,
+            nombre: ev.Asignatura.nombre,
+            creditos: ev.Asignatura.creditos,
+            horas_semanales: ev.Asignatura.horas_semanales,
+          });
+        }
+      });
+
+      setAsignaturas(Array.from(asignaturasMap.values()));
 
       // Calcular resumen académico
       calcularResumenAcademico(evaluacionesData);
@@ -329,6 +348,16 @@ export default function EstudiantePerfil() {
       <ul className="nav nav-tabs mb-3">
         <li className="nav-item">
           <button
+            className={`nav-link ${
+              activeTab === 'asignaturas' ? 'active' : ''
+            }`}
+            onClick={() => setActiveTab('asignaturas')}
+          >
+            <i className="bi bi-book-fill"></i> Mis Asignaturas
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
             className={`nav-link ${activeTab === 'notas' ? 'active' : ''}`}
             onClick={() => setActiveTab('notas')}
           >
@@ -356,6 +385,53 @@ export default function EstudiantePerfil() {
       </ul>
 
       {/* Contenido de las tabs */}
+      {activeTab === 'asignaturas' && (
+        <div className="card">
+          <div className="card-header bg-info text-white">
+            <h5 className="mb-0">
+              <i className="bi bi-book-fill"></i> Asignaturas Inscritas
+            </h5>
+          </div>
+          <div className="card-body">
+            {asignaturas && asignaturas.length > 0 ? (
+              <div className="row">
+                {asignaturas.map((asignatura) => (
+                  <div key={asignatura.id} className="col-md-6 col-lg-4 mb-3">
+                    <div className="card h-100 border-info">
+                      <div className="card-body">
+                        <h6 className="card-title text-info">
+                          <i className="bi bi-journal-code"></i>{' '}
+                          {asignatura.codigo}
+                        </h6>
+                        <h5 className="card-subtitle mb-3">
+                          {asignatura.nombre}
+                        </h5>
+                        <div className="d-flex justify-content-between">
+                          <small className="text-muted">
+                            <i className="bi bi-star-fill text-warning"></i>{' '}
+                            {asignatura.creditos || 0} créditos
+                          </small>
+                          <small className="text-muted">
+                            <i className="bi bi-clock-fill text-primary"></i>{' '}
+                            {asignatura.horas_semanales || 0} hrs/sem
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="alert alert-info">
+                <i className="bi bi-info-circle"></i> No hay asignaturas
+                registradas aún. Las asignaturas aparecerán cuando se registren
+                evaluaciones.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {activeTab === 'notas' && (
         <div className="card">
           <div className="card-header bg-primary text-white">

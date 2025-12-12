@@ -160,43 +160,51 @@ export default function Asignaturas() {
             <div className="card-body">
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
-                  <label className="form-label">Nombre</label>
+                  <label className="form-label">Nombre *</label>
                   <input
                     type="text"
                     className="form-control"
                     value={form.nombre}
-                    onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, nombre: e.target.value })
+                    }
                     required
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Código</label>
+                  <label className="form-label">Código *</label>
                   <input
                     type="text"
                     className="form-control"
                     value={form.codigo}
-                    onChange={(e) => setForm({ ...form, codigo: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, codigo: e.target.value })
+                    }
                     required
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Créditos</label>
+                  <label className="form-label">Créditos *</label>
                   <input
                     type="number"
                     className="form-control"
                     value={form.creditos}
-                    onChange={(e) => setForm({ ...form, creditos: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, creditos: e.target.value })
+                    }
                     min="1"
                     max="10"
                     required
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Docente</label>
+                  <label className="form-label">Docente *</label>
                   <select
                     className="form-control"
                     value={form.docenteId}
-                    onChange={(e) => setForm({ ...form, docenteId: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, docenteId: e.target.value })
+                    }
                     required
                   >
                     <option value="">Seleccione un docente</option>
@@ -212,7 +220,11 @@ export default function Asignaturas() {
                     {editando ? 'Actualizar' : 'Crear'}
                   </button>
                   {editando && (
-                    <button type="button" className="btn btn-secondary" onClick={handleCancelar}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={handleCancelar}
+                    >
                       Cancelar
                     </button>
                   )}

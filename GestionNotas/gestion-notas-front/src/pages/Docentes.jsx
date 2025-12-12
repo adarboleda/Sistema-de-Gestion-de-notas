@@ -67,9 +67,18 @@ export default function Docentes() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.cedula || !form.nombre || !form.apellido || !form.email) {
+    if (
+      !form.cedula ||
+      !form.nombre ||
+      !form.apellido ||
+      !form.email ||
+      !form.titulo_academico ||
+      !form.especialidad ||
+      !form.area ||
+      form.carga_horaria === undefined
+    ) {
       showWarning(
-        'Por favor complete los campos obligatorios (Cédula, Nombre, Apellido, Email)'
+        'Por favor complete todos los campos obligatorios (Cédula, Nombre, Apellido, Email, Título Académico, Especialidad, Área, Carga Horaria)'
       );
       return;
     }
@@ -306,7 +315,7 @@ export default function Docentes() {
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Título Académico</label>
+                  <label className="form-label">Título Académico *</label>
                   <input
                     type="text"
                     className="form-control"
@@ -315,10 +324,11 @@ export default function Docentes() {
                       setForm({ ...form, titulo_academico: e.target.value })
                     }
                     placeholder="Ej: Ingeniero, Licenciado, PhD"
+                    required
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Especialidad</label>
+                  <label className="form-label">Especialidad *</label>
                   <input
                     type="text"
                     className="form-control"
@@ -326,6 +336,7 @@ export default function Docentes() {
                     onChange={(e) =>
                       setForm({ ...form, especialidad: e.target.value })
                     }
+                    required
                   />
                 </div>
                 <div className="mb-3">
@@ -346,18 +357,19 @@ export default function Docentes() {
                   </small>
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Área</label>
+                  <label className="form-label">Área *</label>
                   <input
                     type="text"
                     className="form-control"
                     value={form.area}
                     onChange={(e) => setForm({ ...form, area: e.target.value })}
                     placeholder="Ej: Matemáticas, Ciencias"
+                    required
                   />
                 </div>
                 <div className="mb-3">
                   <label className="form-label">
-                    Carga Horaria (horas/semana)
+                    Carga Horaria (horas/semana) *
                   </label>
                   <input
                     type="number"
@@ -371,6 +383,7 @@ export default function Docentes() {
                     }
                     min="0"
                     max="60"
+                    required
                   />
                 </div>
                 <div className="mb-3">

@@ -70,8 +70,8 @@ export default function Home() {
         </p>
       </div>
 
-      {/* Tarjetas de Acceso Rápido - Solo para Admin y Docente */}
-      {user?.rol !== 'estudiante' && (
+      {/* Tarjetas de Acceso Rápido - Solo para Admin */}
+      {user?.rol === 'admin' && (
         <div className="row g-3 mb-4">
           <div className="col-md-3">
             <Link to="/estudiantes" className="text-decoration-none">
@@ -124,6 +124,31 @@ export default function Home() {
                   </div>
                   <h5 className="card-title mt-2">Evaluaciones</h5>
                   <p className="card-text text-muted small">Parciales</p>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Tarjeta de Evaluaciones - Solo para Docente */}
+      {user?.rol === 'docente' && (
+        <div className="row g-3 mb-4">
+          <div className="col-md-12">
+            <Link to="/evaluaciones" className="text-decoration-none">
+              <div className="card text-center shadow-sm border-warning">
+                <div className="card-body py-4">
+                  <div className="display-4 text-warning mb-3">
+                    <i className="bi bi-clipboard-check-fill"></i>
+                  </div>
+                  <h4 className="card-title">Evaluaciones</h4>
+                  <p className="card-text text-muted">
+                    Gestionar evaluaciones, parciales y calificaciones de
+                    estudiantes
+                  </p>
+                  <button className="btn btn-warning mt-2">
+                    <i className="bi bi-clipboard-check"></i> Ir a Evaluaciones
+                  </button>
                 </div>
               </div>
             </Link>
